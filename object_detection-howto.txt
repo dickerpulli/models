@@ -1,0 +1,34 @@
+Howto create object_detection with own model
+--------------------------------------------
+
+Copy of https://github.com/EdjeElectronics/TensorFlow-Object-Detection-API-Tutorial-Train-Multiple-Objects-Windows-10
+
+Valid for tensorflow 1.12 (01/2019)
+
+Requirements
+- pip install --ignore-installed --upgrade tensorflow(-gpu)
+- pip install pillow lxml Cython jupyter matplotlib pandas opencv-python
+- set PYTHONPATH=<path-to-models>/models;<path-to-models>/models/research;<path-to-models>/models/research/slim
+- Download models http://download.tensorflow.org/models/object_detection/faster_rcnn_inception_v2_coco_2018_01_28.tar.gz
+- Unzip <path-to-models>/models/research/object_detection
+- In <path-to-models>/models/research: protoc --python_out=. ./object_detection/protos/*.proto
+- In <path-to-models>/models/research: python setup.py build && python setup.py install
+
+Training
+- Create images 
+- Resize images
+- Label images with labelImg
+- Change to directory /Users/thomas/Entwicklung/tensorflow/models/research/object_detection
+- Move images and labels (xml) to images/
+- python xml_to_csv.py
+- python generate_tfrecord.py --csv_input=images/train_labels.csv --image_dir=images/train --output_path=train.record
+- python generate_tfrecord.py --csv_input=images/test_labels.csv --image_dir=images/test --output_path=test.record
+- Edit labelmap.pbtxt
+- Edit training/faster_rcnn_inception_v2_pets.config
+- python model_main.py  --alsologtostderr --model_dir=training/ --pipeline_config_path=training/faster_rcnn_inception_v2_pets.config --num_train_steps=1 --sample_1_of_n_eval_examples=1
+- To see what's going on: tensorboard --logdir=training
+- Wait for result to be "good enough"
+- After finished training: python export_inference_graph.py --input_type image_tensor --pipeline_config_path training/faster_rcnn_inception_v2_pets.config --trained_checkpoint_prefix training/model.ckpt-17380 --output_directory inference_graph
+
+Prediction
+- Test with: python Object_detection_*.py
